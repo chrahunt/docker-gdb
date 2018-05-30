@@ -1,0 +1,18 @@
+set editing-mode vi
+
+$if gdb
+$if mode=vi
+# fix gdb TUI-mode keybindings in vi mode
+set keymap vi
+"\ee": emacs-editing-mode
+"\C-xa": tui-switch-mode
+# there's no registered function for switching screens so we
+# switch to emacs mode and execute it there.
+"\C-xo": "\ee\C-xo\C-Rml"
+
+set keymap vi-insert
+"\ee" emacs-editing-mode
+"\C-xa": tui-switch-mode
+"\C-xo": "\ee\C-xo\C-Rv"
+$endif
+$endif

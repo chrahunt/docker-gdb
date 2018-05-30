@@ -1,0 +1,32 @@
+#!/bin/sh
+is_number() {
+    case "$1" in
+        ''|*[!0-9]*) return 1;;
+        *) return 0;;
+    esac
+}
+
+# we were invoked without being in another pid namespace, abort
+if [ "$$" = "1" ]; then
+    echo "Container should be run with --pid=container:container-id with the"
+    echo "container you care about"
+    exit 1
+# if a number is provided as the first argument, it is the pid of the
+# process to debug
+elif is_number "$1"; then
+    pid="$1"
+    shift
+# assume pid 1 is the process to debug
+else
+    pid=1
+fi
+
+file="$(readlink /proc/$pid/exe)"
+sysroot=/proc/$pid/root
+# Pass any arguments through to gdb
+exec gdb \
+    -iex "set sysroot $sysroot" \
+    -iex "python sys.path.append('/usr/share/gcc-8/python')" \
+    "$@" \
+    "$sysroot$file" \
+    $pid
